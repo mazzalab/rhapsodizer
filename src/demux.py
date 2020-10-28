@@ -1,4 +1,5 @@
 import os
+
 import argparse
 from collections import Counter
 from gzip import open as gzopen
@@ -110,7 +111,7 @@ def analyze_read(read_seq: str, unaltered_read_length: int) -> tuple:
     return cl1.orig_seq if cl1 else None, \
            cl2.orig_seq if cl2 else None, \
            cl3.orig_seq if cl3 else None, \
-           umi.umi_seq, \
+           umi.umi_seq if umi else None, \
            polyt
 
 
@@ -206,7 +207,7 @@ def main(r1: str, r2: str, read_length: int, stags_file_name: str, index_file_na
     cart_idx = readCartridgeIndex(index_file_name)
 
     # process sample tags and cartridge indices
-    # r2_passed_reads, r2_dropped_reads = readR2(r2, stags, cart_idx)
+    # r2_passed, r2_dropped = readR2(r2, stags, cart_idx)
     r1_passed, r1_dropped = readR1(r1, read_length)
     pass
 
@@ -226,4 +227,6 @@ if __name__ == "__main__":
     ind_f_name = args.index
     read_length = args.read_length
 
+    from . import log
+    log.warning('This is a Warning')
     main(r1, r2, read_length, st_f_name, ind_f_name)

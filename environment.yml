@@ -1,0 +1,8 @@
+name: rhapsodizer
+channels:
+  - bioconda
+  - r
+  - defaults
+dependencies:
+  - python=3.8
+  - regex
