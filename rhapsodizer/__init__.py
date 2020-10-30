@@ -3,9 +3,10 @@ File description
 """
 
 import logging
+from rhapsodizer.color_log_formatter import ColorFormatter
 
 __author__ = "Tommaso Mazza"
-__copyright__ = "Copyright 2019, The rhapsodizer_project Project"
+__copyright__ = "Copyright 2019, The rhapsodizer Project"
 __version__ = "0.0.1"
 __maintainer__ = "Tommaso Mazza"
 __email__ = "bioinformatics@css-mendel.it"
@@ -44,7 +45,8 @@ DEBUGFORMATTER = '%(asctime)s - %(name)s/%(filename)s(%(funcName)s) - %(levelnam
 # defines the stream handler
 ch = logging.StreamHandler()  # creates the handler
 ch.setLevel(logging.INFO)  # sets the handler info
-ch.setFormatter(logging.Formatter(DEBUGFORMATTER))  # sets the handler formatting
+cf = ColorFormatter(DEBUGFORMATTER)
+ch.setFormatter(cf)  # sets the handler formatting
 
 # adds the handler to the global variable: log
 log.addHandler(ch)

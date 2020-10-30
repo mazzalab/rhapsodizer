@@ -2,15 +2,18 @@
 File description
 """
 
+import colorama
 import logging
+from copy import copy
+
 
 __author__ = "Tommaso Mazza"
-__copyright__ = "Copyright 2019, The rhapsodizer Project"
+__copyright__ = "Copyright 2019, The rhapsodizer_project Project"
 __version__ = "0.0.1"
 __maintainer__ = "Tommaso Mazza"
 __email__ = "bioinformatics@css-mendel.it"
 __status__ = "Development"
-__date__ = "28/10/2020"
+__date__ = "29/10/2020"
 __creator__ = "t.mazza"
 __license__ = u"""
   Copyright (C) 2016-2020  Tommaso Mazza <t,mazza@css-mendel.it>
@@ -32,21 +35,25 @@ __license__ = u"""
   02110-1301 USA
   """
 
-# logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
-# logging.getLogger(__name__).addHandler(logging.NullHandler())
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
 
-DEBUGFORMATTER = '%(filename)s:%(name)s:%(funcName)s:%(lineno)d: %(message)s'
-"""Debug file formatter."""
+LOG_COLORS = {
+    logging.INFO: colorama.Fore.BLUE,
+    logging.ERROR: colorama.Fore.RED,
+    logging.WARNING: colorama.Fore.YELLOW
+}
 
-INFOFORMATTER = '%(message)s'
-"""Log file and stream output formatter."""
 
-# defines the stream handler
-ch = logging.StreamHandler()  # creates the handler
-ch.setLevel(logging.INFO)  # sets the handler info
-ch.setFormatter(logging.Formatter(INFOFORMATTER))  # sets the handler formatting
-
-# adds the handler to the global variable: log
-log.addHandler(ch)
+class ColorFormatter(logging.Formatter):
+    def format(self, record, *args, **kwargs):
+        # if the corresponding logger has children, they may receive modified
+        # record, so we want to keep it intact
+        new_record = copy(record)
+        if new_record.levelno in LOG_COLORS:
+            # we want levelname to be in different color, so let's modify it
+            new_record.levelname = "{color_begin}{level}{color_end}".format(
+                level=new_record.levelname,
+                color_begin=LOG_COLORS[new_record.levelno],
+                color_end=colorama.Style.RESET_ALL,
+            )
+        # now we can let standard formatting take care of the rest
+        return super(ColorFormatter, self).format(new_record, *args, **kwargs)

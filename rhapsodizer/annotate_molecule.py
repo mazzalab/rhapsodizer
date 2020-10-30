@@ -349,14 +349,15 @@ class Molecule:
                                last_matched_pos=len(cl_curr))
         else:
             # Fuzzy search
+            res = None
             for cl_label in cell_labels:
                 res = regex.search(rf"(?:{cl_label}){{{matching_rule}}}", cl_curr)
                 if res:
                     return ClMatchData(orig_seq=cl_label,
                                        matched_seq=cl_curr,
                                        last_matched_pos=res.regs[0][1])
-                else:
-                    return res
+
+            return res
 
     @classmethod
     def search_cl(cls, r1_seq: str, cl_num: int, altered_read: bool) -> ClMatchData or None:
