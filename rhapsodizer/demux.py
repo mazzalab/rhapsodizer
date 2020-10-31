@@ -6,7 +6,7 @@ from rhapsodizer.r2 import R2
 from rhapsodizer.r1 import R1
 
 
-def process_reads(r1: str, r2: str, read_length: int, stags_file_name: str, index_file_name: str):
+def main(r1: str, r2: str, read_length: int, stags_file_name: str, index_file_name: str):
     # read sample tags
     log.info('Reading sample tags file')
     stags = R2.readST(stags_file_name)
@@ -19,7 +19,7 @@ def process_reads(r1: str, r2: str, read_length: int, stags_file_name: str, inde
     log.info('Processing R2')
     # r2_passed, r2_dropped = R2.readR2(r2, stags, cart_idx)
     log.info('Processing R1')
-    r1_passed, r1_dropped = R1.readR1(r1, read_length)
+    r1_passed, r1_dropped = R1.parse(r1, read_length)
     pass
 
 
@@ -39,4 +39,4 @@ if __name__ == "__main__":
     read_length = args.read_length
 
     log.info('Start processing Raphsody BD reads')
-    process_reads(r1, r2, read_length, st_f_name, ind_f_name)
+    main(r1, r2, read_length, st_f_name, ind_f_name)

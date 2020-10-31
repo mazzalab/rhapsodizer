@@ -2,6 +2,7 @@
 File description
 """
 
+from abc import ABC, abstractmethod
 from collections import Counter
 
 __author__ = "Tommaso Mazza"
@@ -13,7 +14,7 @@ __status__ = "Development"
 __date__ = "30/10/2020"
 __creator__ = "t.mazza"
 __license__ = u"""
-  Copyright (C) 2016-2020  Tommaso Mazza <t,mazza@css-mendel.it>
+  Copyright (C) 2020  Tommaso Mazza <t,mazza@css-mendel.it>
   Viale Regina Margherita 261, 00198 Rome, Italy
 
   This program is free software; you can redistribute it and/or modify
@@ -33,7 +34,7 @@ __license__ = u"""
   """
 
 
-class Read:
+class Read(ABC):
     min_read_length = 66
     max_snf = 0.55
     min_qual = 20
@@ -80,3 +81,8 @@ class Read:
             return False
         else:
             return True
+
+    @staticmethod
+    # @abstractmethod
+    def parse(read_seq: str):
+        pass

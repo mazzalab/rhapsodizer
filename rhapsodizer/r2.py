@@ -76,14 +76,14 @@ class R2(Read):
         return base_out_file_name
 
     @staticmethod
-    def readR2(r2_file: str, stags: dict, cart_idx: dict) -> tuple:
+    def parse(r2_file: str, stags: dict, cart_idx: dict) -> tuple:
         # get file name without extension
         try:
             base_out_file_name = R2.get_file_name(r2_file)
         except TypeError as te:
             raise
 
-        r2_dict = {}
+        r2_passed = {}
         r2_dropped = []
         with gzopen(r2_file, 'rt') as r2_f:
             for header in r2_f:
@@ -96,23 +96,24 @@ class R2(Read):
                     # Check Read length and Highest Single Nucleotide Frequency (SNF)
                     if not R2.has_minimum_read_length(read_seq) or not R2.check_snf(read_seq):
                         r2_dropped.append(header)
+                        r2_f.readline()  # skip "+"
+                        r2_f.readline()  # skip qual line
                     else:
                         temp_st_name = [st_names for st, st_names in stags.items() if st in read_seq]
 
+                        r2_f.readline()  # skip "+"
+                        read_qual = r2_f.readline().strip()  # process qual line
                         if len(temp_st_name) == 1:
-                            r2_dict[header] = base_out_file_name + "_" + temp_st_name[0] + "_" + cart_idx[read_idx]
+                            if not R2.has_minimum_quality_value(read_qual):
+                                r2_dropped.append((header, "min_qual"))
+                            else:
+                                r2_passed[header] = base_out_file_name + "_" + temp_st_name[0] + "_" + cart_idx[read_idx]
                         elif len(temp_st_name) > 1:
                             r2_dropped.append(header)
                 else:
                     r2_dropped.append(header)
-                    # skip fasta line
-                    r2_f.readline()
+                    r2_f.readline()  # skip fasta line
+                    r2_f.readline()  # skip "+"
+                    r2_f.readline().strip()  # skip qual line
 
-                # skip "+"
-                r2_f.readline()
-                # process quality line
-                read_qual = r2_f.readline().strip()
-                if not R2.has_minimum_quality_value(read_qual):
-                    r2_dropped.append((header, "min_qual"))
-
-        return r2_dict, r2_dropped
+        return r2_passed, r2_dropped

@@ -2,8 +2,10 @@
 File description
 """
 
+import sys, os
 import logging
 from rhapsodizer.color_log_formatter import ColorFormatter
+
 
 __author__ = "Tommaso Mazza"
 __copyright__ = "Copyright 2019, The rhapsodizer Project"

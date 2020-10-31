@@ -41,7 +41,7 @@ class R1(Read):
     min_read_length = 66
     max_snf = 0.55
     min_qual = 20
-    min_polyt_rate = 0.75
+    min_t_in_polyt = 6
 
     @classmethod
     def is_valid_polyt(cls, read_seq_after_umi: str) -> bool:
@@ -51,9 +51,9 @@ class R1(Read):
         :param read_seq_after_umi:
         :return:
         """
-        c = Counter(read_seq_after_umi)
+        c = Counter(read_seq_after_umi[0:9])
         numt = c["T"]
-        if numt / len(read_seq_after_umi) >= cls.min_polyt_rate:
+        if numt >= cls.min_t_in_polyt:
             return True
         else:
             return False
@@ -83,7 +83,7 @@ class R1(Read):
                polyt
 
     @staticmethod
-    def readR1(r1_file: str, unaltered_read_length: int) -> tuple:
+    def parse(r1_file: str, unaltered_read_length: int) -> tuple:
         r1_passed = {}
         r1_dropped = []
 
@@ -103,19 +103,18 @@ class R1(Read):
                     # Check Read length and Highest Single Nucleotide Frequency (SNF)
                     if not R1.has_minimum_read_length(read_seq) or not R1.check_snf(read_seq):
                         r1_dropped.append((header, "short", "snf"))
-                        # skip remaining belonging to this read
+                        # skip remaining info belonging to this read
+                        r1_f.readline()
+
                         temp = r1_f.readline()
-                        pbar.update(len(temp))
-                        temp = r1_f.readline()
-                        pbar.update(len(temp))
+                        pbar.update(len(temp)+1)  # +1 accounts for + of the previous line
                     else:
                         #  skip "+" separator line
-                        temp = r1_f.readline()
-                        pbar.update(len(temp))
+                        r1_f.readline()
 
                         # Check mean base quality score
                         read_qual = r1_f.readline().strip()
-                        pbar.update(len(read_qual))
+                        pbar.update(len(read_qual) + 1)  # +1 accounts for + of the previous line
                         if not R1.has_minimum_quality_value(read_qual):
                             r1_dropped.append((header, "min_qual"))
                         else:
