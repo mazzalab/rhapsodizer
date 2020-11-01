@@ -9,17 +9,21 @@ from rhapsodizer.r1 import R1
 def main(r1: str, r2: str, read_length: int, stags_file_name: str, index_file_name: str):
     # read sample tags
     log.info('Reading sample tags file')
-    stags = R2.readST(stags_file_name)
+    stags = R2.read_st(stags_file_name)
 
     # read cartridge index
     log.info('Reading cardridge index list')
-    cart_idx = R2.readCartridgeIndex(index_file_name)
+    cart_idx = R2.read_cartridge_index(index_file_name)
 
     # process sample tags and cartridge indices
     log.info('Processing R2')
-    # r2_passed, r2_dropped = R2.readR2(r2, stags, cart_idx)
+    r2_passed, r2_dropped = R2.parse(r2, stags, cart_idx)
     log.info('Processing R1')
-    r1_passed, r1_dropped = R1.parse(r1, read_length)
+    r1_passed, r1_dropped = R1.parse(r1, read_length, r2_dropped)
+
+    # merge dropped reads
+    r2_passed_good = R2.purge_reads(r2_passed, r1_dropped)
+    r1_passed_good = R1.purge_reads(r1_passed, r2_dropped)
     pass
 
 

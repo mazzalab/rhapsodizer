@@ -3,6 +3,7 @@ File description
 """
 
 import os
+from tqdm import tqdm
 from gzip import open as gzopen
 from rhapsodizer.read import Read
 
@@ -41,7 +42,7 @@ class R2(Read):
     min_qual = 20
 
     @staticmethod
-    def readST(st_f_name: str) -> dict:
+    def read_st(st_f_name: str) -> dict:
         st = {}
         with open(st_f_name, 'r') as st_f:
             for tag in st_f:
@@ -53,7 +54,7 @@ class R2(Read):
         return st
 
     @staticmethod
-    def readCartridgeIndex(ind_f_name: str) -> dict:
+    def read_cartridge_index(ind_f_name: str) -> dict:
         ind = {}
         with open(ind_f_name, 'r') as ind_f:
             for index in ind_f:
@@ -85,35 +86,50 @@ class R2(Read):
 
         r2_passed = {}
         r2_dropped = []
+
         with gzopen(r2_file, 'rt') as r2_f:
-            for header in r2_f:
-                header = header.strip()
-                # the read index is located in the last 8 character of the header
-                read_idx = header[-8:]
-                if read_idx in cart_idx:
-                    read_seq = r2_f.readline().strip()
+            r2_f.seek(0, 2)
+            uncompressed_size = r2_f.tell()
+            r2_f.seek(0)
 
-                    # Check Read length and Highest Single Nucleotide Frequency (SNF)
-                    if not R2.has_minimum_read_length(read_seq) or not R2.check_snf(read_seq):
-                        r2_dropped.append(header)
-                        r2_f.readline()  # skip "+"
-                        r2_f.readline()  # skip qual line
+            with tqdm(total=uncompressed_size) as pbar:
+                for header in r2_f:
+                    header = header.strip()
+                    pbar.update(len(header))
+
+                    # the read index is located in the last 8 character of the header
+                    read_idx = header[-8:]
+                    if read_idx in cart_idx:
+                        read_seq = r2_f.readline().strip()
+                        pbar.update(len(read_seq))
+
+                        # Check Read length and Highest Single Nucleotide Frequency (SNF)
+                        if not R2.has_minimum_read_length(read_seq) or not R2.check_snf(read_seq):
+                            r2_dropped.append((header, "min_length or snf"))
+                            r2_f.readline()  # skip "+"
+                            temp = r2_f.readline()  # skip qual line
+                            pbar.update(len(temp) + 1)
+                        else:
+                            temp_st_name = [st_names for st, st_names in stags.items() if st in read_seq]
+
+                            r2_f.readline()  # skip "+"
+                            read_qual = r2_f.readline().strip()  # process qual line
+                            pbar.update(len(read_qual) + 1)
+                            if len(temp_st_name) == 1:
+                                if not R2.has_minimum_quality_value(read_qual):
+                                    r2_dropped.append((header, "min_qual"))
+                                else:
+                                    r2_passed[header] = base_out_file_name + "_" + temp_st_name[0] + "_" + cart_idx[
+                                        read_idx]
+                            elif len(temp_st_name) > 1:
+                                r2_dropped.append((header, "multiple_st"))
                     else:
-                        temp_st_name = [st_names for st, st_names in stags.items() if st in read_seq]
-
+                        r2_dropped.append((header, "cart_idx"))
+                        temp = len(r2_f.readline())  # skip fasta line
                         r2_f.readline()  # skip "+"
-                        read_qual = r2_f.readline().strip()  # process qual line
-                        if len(temp_st_name) == 1:
-                            if not R2.has_minimum_quality_value(read_qual):
-                                r2_dropped.append((header, "min_qual"))
-                            else:
-                                r2_passed[header] = base_out_file_name + "_" + temp_st_name[0] + "_" + cart_idx[read_idx]
-                        elif len(temp_st_name) > 1:
-                            r2_dropped.append(header)
-                else:
-                    r2_dropped.append(header)
-                    r2_f.readline()  # skip fasta line
-                    r2_f.readline()  # skip "+"
-                    r2_f.readline().strip()  # skip qual line
+                        temp = temp + len(r2_f.readline().strip())  # skip qual line
+                        pbar.update(temp)
 
+                pbar.update(uncompressed_size)
+                pbar.set_description(f"Processed {uncompressed_size} reads")
         return r2_passed, r2_dropped

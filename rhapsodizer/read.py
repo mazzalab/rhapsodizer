@@ -83,6 +83,10 @@ class Read(ABC):
             return True
 
     @staticmethod
+    def purge_reads(passed_reads: dict, dropped_reads: list) -> dict:
+        return {key: passed_reads[key] for key in passed_reads if key not in dropped_reads}
+
+    @staticmethod
     # @abstractmethod
     def parse(read_seq: str):
         pass

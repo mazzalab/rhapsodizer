@@ -83,7 +83,7 @@ class R1(Read):
                polyt
 
     @staticmethod
-    def parse(r1_file: str, unaltered_read_length: int) -> tuple:
+    def parse(r1_file: str, unaltered_read_length: int, r2_dropped: list = None) -> tuple:
         r1_passed = {}
         r1_dropped = []
 
@@ -96,6 +96,8 @@ class R1(Read):
                 for header in r1_f:
                     header = header.strip()
                     pbar.update(len(header))
+
+                    # TODO: check that this read is not included in r2_dropped
 
                     read_seq = r1_f.readline().strip()
                     pbar.update(len(read_seq))
