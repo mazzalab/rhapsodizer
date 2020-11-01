@@ -6,24 +6,28 @@ from rhapsodizer.r2 import R2
 from rhapsodizer.r1 import R1
 
 
-def main(r1: str, r2: str, read_length: int, stags_file_name: str, index_file_name: str):
-    # read sample tags
-    log.info('Reading sample tags file')
-    stags = R2.read_st(stags_file_name)
+def main(r1: str, r2: str, r2_map: str, read_length: int, stags_file_name: str, index_file_name: str):
+    # read alignment passed/dropped read headers
+    r2_map_passed: dict
+    r2_map_dropped: set
+    r2_map_passed, r2_map_dropped = R2.parse_bam(r2_map)
 
-    # read cartridge index
-    log.info('Reading cardridge index list')
-    cart_idx = R2.read_cartridge_index(index_file_name)
-
-    # process sample tags and cartridge indices
     log.info('Processing R2')
-    r2_passed, r2_dropped = R2.parse(r2, stags, cart_idx)
+    r2_passed: dict
+    r2_dropped: set
+    r2_passed, r2_dropped = R2.parse_fastq(r2, stags_file_name, index_file_name)
+
+    # merge dropped reads in R2 and dispose variables
+    r2_all_dropped = r2_map_dropped.union(r2_dropped)
+    del r2_map_dropped
+    del r2_dropped
+
     log.info('Processing R1')
-    r1_passed, r1_dropped = R1.parse(r1, read_length, r2_dropped)
+    r1_passed, r1_dropped = R1.parse_fastq(r1, read_length, r2_all_dropped)
 
     # merge dropped reads
-    r2_passed_good = R2.purge_reads(r2_passed, r1_dropped)
-    r1_passed_good = R1.purge_reads(r1_passed, r2_dropped)
+    # r2_passed_good = R2.purge_reads(r2_passed, r1_dropped)
+    # r1_passed_good = R1.purge_reads(r1_passed, r2_dropped)
     pass
 
 
@@ -31,6 +35,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Input and output file arguments')
     parser.add_argument("--r1", help="R1 fastq file")
     parser.add_argument("--r2", help="R2 fastq file")
+    parser.add_argument("--r2_bam", help="R2 bam file")
     parser.add_argument("--tag", help="Sample tags file")
     parser.add_argument("--index", help="Cartridge indices file")
     parser.add_argument("--read_length", help="Sequencing full read length", type=int)
@@ -38,9 +43,10 @@ if __name__ == "__main__":
 
     r1 = args.r1
     r2 = args.r2
+    r2_bam = args.r2_bam
     st_f_name = args.tag
     ind_f_name = args.index
     read_length = args.read_length
 
     log.info('Start processing Raphsody BD reads')
-    main(r1, r2, read_length, st_f_name, ind_f_name)
+    main(r1, r2, r2_bam, read_length, st_f_name, ind_f_name)

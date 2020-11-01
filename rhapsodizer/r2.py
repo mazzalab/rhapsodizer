@@ -5,6 +5,7 @@ File description
 import os
 from tqdm import tqdm
 from gzip import open as gzopen
+from rhapsodizer import log
 from rhapsodizer.read import Read
 
 __author__ = "Tommaso Mazza"
@@ -16,7 +17,7 @@ __status__ = "Development"
 __date__ = "30/10/2020"
 __creator__ = "t.mazza"
 __license__ = u"""
-  Copyright (C) 2016-2020  Tommaso Mazza <t,mazza@css-mendel.it>
+  Copyright (C) 2020  Tommaso Mazza <t,mazza@css-mendel.it>
   Viale Regina Margherita 261, 00198 Rome, Italy
 
   This program is free software; you can redistribute it and/or modify
@@ -77,16 +78,32 @@ class R2(Read):
         return base_out_file_name
 
     @staticmethod
-    def parse(r2_file: str, stags: dict, cart_idx: dict) -> tuple:
+    def parse_bam(r2_bam: str) -> tuple:
+        r2_map_passed = dict()
+        r2_map_dropped = set()
+
+        # TODO: Mattia adds your method here
+
+        return r2_map_passed, r2_map_dropped
+
+    @staticmethod
+    def parse_fastq(r2_file: str, stags_file_name: str, index_file_name: str) -> tuple:
         # get file name without extension
         try:
             base_out_file_name = R2.get_file_name(r2_file)
         except TypeError as te:
             raise
 
-        r2_passed = {}
-        r2_dropped = []
+        # read sample tags
+        log.info('Reading sample tags file')
+        stags: dict = R2.read_st(stags_file_name)
 
+        # read cartridge index
+        log.info('Reading cartridge index list')
+        cart_idx: dict = R2.read_cartridge_index(index_file_name)
+
+        r2_passed = {}
+        r2_dropped = set()
         with gzopen(r2_file, 'rt') as r2_f:
             r2_f.seek(0, 2)
             uncompressed_size = r2_f.tell()
@@ -105,7 +122,7 @@ class R2(Read):
 
                         # Check Read length and Highest Single Nucleotide Frequency (SNF)
                         if not R2.has_minimum_read_length(read_seq) or not R2.check_snf(read_seq):
-                            r2_dropped.append((header, "min_length or snf"))
+                            r2_dropped.add((header, "min_length or snf"))
                             r2_f.readline()  # skip "+"
                             temp = r2_f.readline()  # skip qual line
                             pbar.update(len(temp) + 1)
@@ -117,14 +134,14 @@ class R2(Read):
                             pbar.update(len(read_qual) + 1)
                             if len(temp_st_name) == 1:
                                 if not R2.has_minimum_quality_value(read_qual):
-                                    r2_dropped.append((header, "min_qual"))
+                                    r2_dropped.add((header, "min_qual"))
                                 else:
                                     r2_passed[header] = base_out_file_name + "_" + temp_st_name[0] + "_" + cart_idx[
                                         read_idx]
                             elif len(temp_st_name) > 1:
-                                r2_dropped.append((header, "multiple_st"))
+                                r2_dropped.add((header, "multiple_st"))
                     else:
-                        r2_dropped.append((header, "cart_idx"))
+                        r2_dropped.add((header, "cart_idx"))
                         temp = len(r2_f.readline())  # skip fasta line
                         r2_f.readline()  # skip "+"
                         temp = temp + len(r2_f.readline().strip())  # skip qual line

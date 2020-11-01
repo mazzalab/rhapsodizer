@@ -83,7 +83,7 @@ class R1(Read):
                polyt
 
     @staticmethod
-    def parse(r1_file: str, unaltered_read_length: int, r2_dropped: list = None) -> tuple:
+    def parse_fastq(r1_file: str, unaltered_read_length: int, r2_dropped: set = None) -> tuple:
         r1_passed = {}
         r1_dropped = []
 
@@ -97,21 +97,28 @@ class R1(Read):
                     header = header.strip()
                     pbar.update(len(header))
 
-                    # TODO: check that this read is not included in r2_dropped
-
-                    read_seq = r1_f.readline().strip()
-                    pbar.update(len(read_seq))
+                    # continue if this read's mate has been dropped in R2
+                    temp = header[:42] + "2" + header[43:]
+                    if temp in r2_dropped:
+                        # skip following 3 lines
+                        temp = len(header) + len(r1_f.readline())  # skip seq
+                        r1_f.readline()  # skip '+'
+                        temp = temp + len(r1_f.readline() + 1)  # skip qual
+                        pbar.update(temp)
+                        continue
 
                     # Check Read length and Highest Single Nucleotide Frequency (SNF)
+                    read_seq = r1_f.readline().strip()
+                    pbar.update(len(read_seq))
                     if not R1.has_minimum_read_length(read_seq) or not R1.check_snf(read_seq):
                         r1_dropped.append((header, "short", "snf"))
                         # skip remaining info belonging to this read
                         r1_f.readline()
 
                         temp = r1_f.readline()
-                        pbar.update(len(temp)+1)  # +1 accounts for + of the previous line
+                        pbar.update(len(temp) + 1)  # +1 accounts for + of the previous line
                     else:
-                        #  skip "+" separator line
+                        # skip "+" separator line
                         r1_f.readline()
 
                         # Check mean base quality score

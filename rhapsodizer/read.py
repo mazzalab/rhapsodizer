@@ -87,6 +87,6 @@ class Read(ABC):
         return {key: passed_reads[key] for key in passed_reads if key not in dropped_reads}
 
     @staticmethod
-    # @abstractmethod
-    def parse(read_seq: str):
+    @abstractmethod
+    def parse_fastq(read_seq: str):
         pass
