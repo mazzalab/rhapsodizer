@@ -50,5 +50,5 @@ if __name__ == "__main__":
     ind_f_name = args.index
     read_length = args.read_length
 
-    log.info('Start processing Raphsody BD reads')
+    log.info('Start processing BD Rhapsody reads')
     main(r1, r2, r2_bam, bed, read_length, st_f_name, ind_f_name)

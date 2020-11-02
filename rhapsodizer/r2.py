@@ -3,6 +3,7 @@ File description
 """
 
 import os
+import bamnostic as bs
 from tqdm import tqdm
 from gzip import open as gzopen
 from rhapsodizer import log
@@ -82,7 +83,46 @@ class R2(Read):
         r2_map_passed = dict()
         r2_map_dropped = set()
 
-        # TODO: Mattia adds your method here
+        bam = bs.AlignmentFile(r2_bam, 'rb')
+        for read in bam:
+            # check if read is uniquely mapped
+            if read.mapping_quality >= 4:
+                # check if priming occurs in the first 5 nucleotides
+                nt = 5
+                while nt > 0:
+                    for operator in read.cigar:
+                        if operator[0] == 0:
+                            # check if the total CIGAR M-operation is >60
+                            cigar_dict = dict()
+                            for n,m in read.cigar:
+                                cigar_dict.setdefault(n, []).append(m)
+                            if sum(cigar_dict[0]) > 60:
+                                # check in which gene the read aligns
+                                # the read is a valid gene alignment if at least 1 nt is overlapping
+                                # should be using query_length, query_alignment_length or reference_length?
+                                with open(bed, 'r') as bedf:
+                                    read_start = read.pos + 1 # 1-based transcription start
+                                    read_end = read.pos + 1 + read.query_length # 1-based transcription end
+                                    for line in bedf:
+                                        gene_pos, gene_start, gene_end, gene_symbol = line.split('\t')
+                                        if read.reference_name == gene_pos:
+                                            if ((gene_start <= read_start < gene_end) and (gene_start < read_end <= gene_end)) \
+                                            or (read_start < gene_start <= read_end) \
+                                            or (read_start <= gene_end < read_end):
+                                                r2_map_passed[read.read_name] = gene_symbol.rstrip('\n')
+                                                break # skip remaining lines of bed file
+                                        else:
+                                            continue # read next gene coordinates
+                            else:
+                                r2_map_dropped.add(read.read_name)
+                        else:
+                            nt = nt - operator[1]
+                else:
+                    r2_map_dropped.add(read.read_name)
+            else:
+                r2_map_dropped.add(read.read_name)
+
+        bam.close()
 
         return r2_map_passed, r2_map_dropped
 
