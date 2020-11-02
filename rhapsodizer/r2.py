@@ -78,7 +78,7 @@ class R2(Read):
         return base_out_file_name
 
     @staticmethod
-    def parse_bam(r2_bam: str) -> tuple:
+    def parse_bam(r2_bam: str, bed: str) -> tuple:
         r2_map_passed = dict()
         r2_map_dropped = set()
 

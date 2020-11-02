@@ -6,11 +6,11 @@ from rhapsodizer.r2 import R2
 from rhapsodizer.r1 import R1
 
 
-def main(r1: str, r2: str, r2_map: str, read_length: int, stags_file_name: str, index_file_name: str):
+def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_name: str, index_file_name: str):
     # read alignment passed/dropped read headers
     r2_map_passed: dict
     r2_map_dropped: set
-    r2_map_passed, r2_map_dropped = R2.parse_bam(r2_map)
+    r2_map_passed, r2_map_dropped = R2.parse_bam(r2_map, bed)
 
     log.info('Processing R2')
     r2_passed: dict
@@ -36,6 +36,7 @@ if __name__ == "__main__":
     parser.add_argument("--r1", help="R1 fastq file")
     parser.add_argument("--r2", help="R2 fastq file")
     parser.add_argument("--r2_bam", help="R2 bam file")
+    parser.add_argument("--bed", help="Target genes coordinates")
     parser.add_argument("--tag", help="Sample tags file")
     parser.add_argument("--index", help="Cartridge indices file")
     parser.add_argument("--read_length", help="Sequencing full read length", type=int)
@@ -44,9 +45,10 @@ if __name__ == "__main__":
     r1 = args.r1
     r2 = args.r2
     r2_bam = args.r2_bam
+    bed = args.bed
     st_f_name = args.tag
     ind_f_name = args.index
     read_length = args.read_length
 
     log.info('Start processing Raphsody BD reads')
-    main(r1, r2, r2_bam, read_length, st_f_name, ind_f_name)
+    main(r1, r2, r2_bam, bed, read_length, st_f_name, ind_f_name)
