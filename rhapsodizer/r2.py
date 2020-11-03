@@ -106,13 +106,17 @@ class R2(Read):
                                     for line in bedf:
                                         gene_pos, gene_start, gene_end, gene_symbol = line.split('\t')
                                         if read.reference_name == gene_pos:
-                                            if ((gene_start <= read_start < gene_end) and (gene_start < read_end <= gene_end)) \
-                                            or (read_start < gene_start <= read_end) \
-                                            or (read_start <= gene_end < read_end):
+                                            if (int(gene_start) <= read_start < int(gene_end)) \
+                                            or (read_start < int(gene_start) <= read_end) \
+                                            or (read_start <= int(gene_end) < read_end):
                                                 r2_map_passed[read.read_name] = gene_symbol.rstrip('\n')
+                                                nt = 0
                                                 break # skip remaining lines of bed file
+                                            else:
+                                                continue # read next gene coordinates
                                         else:
                                             continue # read next gene coordinates
+                                    nt = 0
                             else:
                                 r2_map_dropped.add(read.read_name)
                         else:
