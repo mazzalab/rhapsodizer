@@ -121,17 +121,23 @@ class R2(Read):
                                             or (read_start < int(gene_start) <= read_end) \
                                             or (read_start <= int(gene_end) < read_end):
                                                 r2_map_passed[read.read_name] = gene_symbol.rstrip('\n')
-                                                nt = 0  # exit while loop
                                                 break  # skip remaining lines of bed file
                                             else:
                                                 continue  # read next gene coordinates
                                         else:
                                             continue  # read next gene coordinates
-                                    nt = 0  # exit while loop
+                                    
+                                    # drop good reads not mapping in any of the given genes
+                                    if read.read_name not in r2_map_passed.keys():
+                                        r2_map_dropped.add(read.read_name)
+                                    
+                                    break  # skip other cigar operators
                             else:
                                 r2_map_dropped.add(read.read_name)
                         else:
                             nt = nt - operator[1]
+                    
+                    break  # exit while loop
                 else:
                     r2_map_dropped.add(read.read_name)
             else:
