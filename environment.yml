@@ -10,4 +10,5 @@ dependencies:
   - tqdm
   - colorama
   - bamnostic
+  - pandas
 
