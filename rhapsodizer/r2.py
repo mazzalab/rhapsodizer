@@ -82,41 +82,52 @@ class R2(Read):
     def parse_bam(r2_bam: str, bed: str) -> tuple:
         r2_map_passed = dict()
         r2_map_dropped = set()
-
+        
+        # read bam file
+        log.info('Processing BAM file')
         bam = bs.AlignmentFile(r2_bam, 'rb')
+        
         for read in bam:
+            
             # check if read is uniquely mapped
             if read.mapping_quality >= 4:
+                
                 # check if priming occurs in the first 5 nucleotides
                 nt = 5
                 while nt > 0:
                     for operator in read.cigar:
                         if operator[0] == 0:
+                            
                             # check if the total CIGAR M-operation is >60
                             cigar_dict = dict()
                             for n,m in read.cigar:
                                 cigar_dict.setdefault(n, []).append(m)
                             if sum(cigar_dict[0]) > 60:
-                                # check in which gene the read aligns
+                                
                                 # the read is a valid gene alignment if at least 1 nt is overlapping
                                 # should be using query_length, query_alignment_length or reference_length?
+                                # read bed file
                                 with open(bed, 'r') as bedf:
-                                    read_start = read.pos + 1 # 1-based transcription start
-                                    read_end = read.pos + 1 + read.query_length # 1-based transcription end
+                                    read_start = read.pos + 1  # 1-based transcription start
+                                    read_end = read.pos + 1 + read.query_length  # 1-based transcription end
                                     for line in bedf:
                                         gene_pos, gene_start, gene_end, gene_symbol = line.split('\t')
+                                        
+                                        # check if read maps in the chromosome of the current gene coordinates
                                         if read.reference_name == gene_pos:
+                                            
+                                            # check in which gene the read aligns
                                             if (int(gene_start) <= read_start < int(gene_end)) \
                                             or (read_start < int(gene_start) <= read_end) \
                                             or (read_start <= int(gene_end) < read_end):
                                                 r2_map_passed[read.read_name] = gene_symbol.rstrip('\n')
-                                                nt = 0
-                                                break # skip remaining lines of bed file
+                                                nt = 0  # exit while loop
+                                                break  # skip remaining lines of bed file
                                             else:
-                                                continue # read next gene coordinates
+                                                continue  # read next gene coordinates
                                         else:
-                                            continue # read next gene coordinates
-                                    nt = 0
+                                            continue  # read next gene coordinates
+                                    nt = 0  # exit while loop
                             else:
                                 r2_map_dropped.add(read.read_name)
                         else:
@@ -188,7 +199,7 @@ class R2(Read):
                         r2_dropped.add((header, "cart_idx"))
                         temp = len(r2_f.readline())  # skip fasta line
                         r2_f.readline()  # skip "+"
-                        temp = temp + len(r2_f.readline().strip())  # skip qual line
+                        temp = temp + len(r2_f.readline().strip()) + 1  # skip qual line
                         pbar.update(temp)
 
                 pbar.update(uncompressed_size)
