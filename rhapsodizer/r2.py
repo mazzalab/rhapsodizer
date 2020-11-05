@@ -42,6 +42,9 @@ class R2(Read):
     min_read_length = 64
     max_snf = 0.80
     min_qual = 20
+    min_mapping_qual = 4
+    priming_window = 5
+    total_cigar_m = 60
 
     @staticmethod
     def read_st(st_f_name: str) -> dict:
@@ -78,8 +81,23 @@ class R2(Read):
 
         return base_out_file_name
 
-    @staticmethod
-    def parse_bam(r2_bam: str, bed: str) -> tuple:
+    @classmethod
+    def parse_bam(cls, r2_bam: str, bed: str) -> tuple:
+        """
+        An R2 read is a valid gene alignment if all of these criteria are met:
+        The read aligns uniquely to a transcript sequence in the reference.
+        The R2 alignment begins within the first five nucleotides. This criterion
+        ensures that the R2 read originates from an actual PCR priming event.
+        The length of the alignment that can be a match or mismatch in the CIGAR
+        string is >60.
+        The read does not align to phiX174.
+        :param r2_bam:
+        :param bed:
+        :param min_mapping_qual:
+        :param priming_window:
+        :param total_cigar_m:
+        :return:
+        """
         r2_map_passed = dict()
         r2_map_dropped = set()
         
@@ -90,10 +108,10 @@ class R2(Read):
         for read in bam:
             
             # check if read is uniquely mapped
-            if read.mapping_quality >= 4:
+            if read.mapping_quality >= cls.min_mapping_qual:
             
-                # check if priming occurs in the first 5 nucleotides
-                nt = 5
+                # check if priming occurs in the first n nucleotides
+                nt = cls.priming_window
                 while nt > 0:
                     for operator in read.cigar:
                         if operator[0] == 0:
@@ -106,12 +124,12 @@ class R2(Read):
                     r2_map_dropped.add(read.read_name)
                     priming = False
                 
-                # check if the total CIGAR M-operation is >60
+                # check if the total CIGAR M-operation is > m
                 if priming:
                     cigar_dict = dict()
                     for n,m in read.cigar:
                         cigar_dict.setdefault(n, []).append(m)
-                    if sum(cigar_dict[0]) > 60:
+                    if sum(cigar_dict[0]) > cls.total_cigar_m:
                     
                         # the read is a valid gene alignment if at least 1 nt is overlapping
                         # should be using query_length, query_alignment_length or reference_length?
