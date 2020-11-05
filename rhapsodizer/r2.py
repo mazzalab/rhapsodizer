@@ -91,55 +91,63 @@ class R2(Read):
             
             # check if read is uniquely mapped
             if read.mapping_quality >= 4:
-                
+            
                 # check if priming occurs in the first 5 nucleotides
                 nt = 5
                 while nt > 0:
                     for operator in read.cigar:
                         if operator[0] == 0:
-                            
-                            # check if the total CIGAR M-operation is >60
-                            cigar_dict = dict()
-                            for n,m in read.cigar:
-                                cigar_dict.setdefault(n, []).append(m)
-                            if sum(cigar_dict[0]) > 60:
-                                
-                                # the read is a valid gene alignment if at least 1 nt is overlapping
-                                # should be using query_length, query_alignment_length or reference_length?
-                                # read bed file
-                                with open(bed, 'r') as bedf:
-                                    read_start = read.pos + 1  # 1-based transcription start
-                                    read_end = read.pos + 1 + read.query_length  # 1-based transcription end
-                                    for line in bedf:
-                                        gene_pos, gene_start, gene_end, gene_symbol = line.split('\t')
-                                        
-                                        # check if read maps in the chromosome of the current gene coordinates
-                                        if read.reference_name == gene_pos:
-                                            
-                                            # check in which gene the read aligns
-                                            if (int(gene_start) <= read_start < int(gene_end)) \
-                                            or (read_start < int(gene_start) <= read_end) \
-                                            or (read_start <= int(gene_end) < read_end):
-                                                r2_map_passed[read.read_name] = gene_symbol.rstrip('\n')
-                                                break  # skip remaining lines of bed file
-                                            else:
-                                                continue  # read next gene coordinates
-                                        else:
-                                            continue  # read next gene coordinates
-                                    
-                                    # drop good reads not mapping in any of the given genes
-                                    if read.read_name not in r2_map_passed.keys():
-                                        r2_map_dropped.add(read.read_name)
-                                    
-                                    break  # skip other cigar operators
-                            else:
-                                r2_map_dropped.add(read.read_name)
+                            priming = True
+                            break  # skip remaining cigar operators
                         else:
                             nt = nt - operator[1]
-                    
                     break  # exit while loop
                 else:
                     r2_map_dropped.add(read.read_name)
+                    priming = False
+                
+                # check if the total CIGAR M-operation is >60
+                if priming:
+                    cigar_dict = dict()
+                    for n,m in read.cigar:
+                        cigar_dict.setdefault(n, []).append(m)
+                    if sum(cigar_dict[0]) > 60:
+                    
+                        # the read is a valid gene alignment if at least 1 nt is overlapping
+                        # should be using query_length, query_alignment_length or reference_length?
+                        
+                        # read bed file
+                        with open(bed, 'r') as bedf:
+                            read_start = read.pos + 1  # 1-based transcription start
+                            read_end = read.pos + 1 + read.query_length  # 1-based transcription end
+                            for line in bedf:
+                                gene_pos, gene_start, gene_end, gene_symbol = line.split('\t')
+                                
+                                # check if read maps in the chromosome of the current gene coordinates
+                                if read.reference_name == gene_pos:
+                                    
+                                    # check in which gene the read aligns
+                                    if (int(gene_start) <= read_start < int(gene_end)) \
+                                    or (read_start < int(gene_start) <= read_end) \
+                                    or (read_start <= int(gene_end) < read_end):
+                                        r2_map_passed[read.read_name] = gene_symbol.rstrip('\n')
+                                        break  # skip remaining lines of bed file
+                                    else:
+                                        continue  # read next gene coordinates
+                                    
+                                else:
+                                    continue  # read next gene coordinates
+                            
+                            # drop good reads not mapping in any of the given genes
+                            if read.read_name not in r2_map_passed.keys():
+                                r2_map_dropped.add(read.read_name)
+                    
+                    else:
+                        r2_map_dropped.add(read.read_name)
+                        
+                else:
+                    pass
+            
             else:
                 r2_map_dropped.add(read.read_name)
 
