@@ -121,7 +121,6 @@ class R2(Read):
                             nt = nt - operator[1]
                     break  # exit while loop
                 else:
-                    r2_map_dropped.add(read.read_name)
                     priming = False
                 
                 # check if the total CIGAR M-operation is > m
@@ -164,12 +163,13 @@ class R2(Read):
                         r2_map_dropped.add(read.read_name)
                         
                 else:
-                    pass
+                    r2_map_dropped.add(read.read_name)
             
             else:
                 r2_map_dropped.add(read.read_name)
 
         bam.close()
+        print(len(r2_map_passed), len(r2_map_dropped))
 
         return r2_map_passed, r2_map_dropped
 
