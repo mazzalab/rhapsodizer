@@ -169,7 +169,6 @@ class R2(Read):
                 r2_map_dropped.add(read.read_name)
 
         bam.close()
-        print(len(r2_map_passed), len(r2_map_dropped))
 
         return r2_map_passed, r2_map_dropped
 
