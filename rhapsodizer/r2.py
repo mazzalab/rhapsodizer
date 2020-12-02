@@ -98,7 +98,7 @@ class R2(Read):
         :param total_cigar_m:
         :return:
         """
-        r2_map_passed = dict()
+        r2_map_passed = {}
         r2_map_dropped = set()
         
         # read bam file
@@ -125,8 +125,8 @@ class R2(Read):
                 
                 # check if the total CIGAR M-operation is > m
                 if priming:
-                    cigar_dict = dict()
-                    for n,m in read.cigar:
+                    cigar_dict = {}
+                    for n, m in read.cigar:
                         cigar_dict.setdefault(n, []).append(m)
                     if sum(cigar_dict[0]) > cls.total_cigar_m:
                     
