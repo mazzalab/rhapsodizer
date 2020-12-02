@@ -102,7 +102,7 @@ class R2(Read):
         r2_map_dropped = set()
         
         # read bam file
-        log.info('Processing BAM file')
+        log.info('R2: Processing BAM file')
         bam = bs.AlignmentFile(r2_bam, 'rb')
         
         for read in bam:
@@ -181,11 +181,11 @@ class R2(Read):
             raise
 
         # read sample tags
-        log.info('Reading sample tags file')
+        log.info('R2: Reading sample tags file')
         stags: dict = R2.read_st(stags_file_name)
 
         # read cartridge index
-        log.info('Reading cartridge index list')
+        log.info('R2: Reading cartridge index list')
         cart_idx: dict = R2.read_cartridge_index(index_file_name)
 
         r2_passed = {}

@@ -7,12 +7,13 @@ from rhapsodizer.r1 import R1
 
 
 def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_name: str, index_file_name: str):
+    log.info('Processing R2')
+    
     # read alignment passed/dropped read headers
     r2_map_passed: dict
     r2_map_dropped: set
     r2_map_passed, r2_map_dropped = R2.parse_bam(r2_map, bed)
 
-    log.info('Processing R2')
     r2_passed: dict
     r2_dropped: set
     r2_passed, r2_dropped = R2.parse_fastq(r2, stags_file_name, index_file_name)
@@ -22,9 +23,10 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     del r2_map_dropped
     del r2_dropped
     
-    #r2_all_dropped.clear()  # needed for testing r1.py
+    # r2_all_dropped.clear()  # needed for testing r1.py
 
     log.info('Processing R1')
+    
     r1_passed, r1_dropped = R1.parse_fastq(r1, read_length, r2_all_dropped)
 
     # merge dropped reads
