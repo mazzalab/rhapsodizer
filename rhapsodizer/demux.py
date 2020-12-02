@@ -21,6 +21,8 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     r2_all_dropped = r2_map_dropped.union(r2_dropped)
     del r2_map_dropped
     del r2_dropped
+    
+    #r2_all_dropped.clear()  # needed for testing r1.py
 
     log.info('Processing R1')
     r1_passed, r1_dropped = R1.parse_fastq(r1, read_length, r2_all_dropped)
