@@ -8,7 +8,6 @@ from rhapsodizer.r1 import R1
 
 def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_name: str, index_file_name: str):
     log.info('Processing R2')
-    
     # read alignment passed/dropped read headers
     r2_map_passed: dict
     r2_map_dropped: set
@@ -26,7 +25,6 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     # r2_all_dropped.clear()  # needed for testing r1.py
 
     log.info('Processing R1')
-    
     r1_passed, r1_dropped = R1.parse_fastq(r1, read_length, r2_all_dropped)
 
     # merge dropped reads
