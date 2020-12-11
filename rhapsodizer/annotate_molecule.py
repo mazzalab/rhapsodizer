@@ -32,13 +32,18 @@ class Molecule:
 
     @classmethod
     def get_linkers_coordinates(cls, read_seq: str) -> tuple or None:
-        linker1_coords = linker2_coords = None
+        linker1_match = linker1_coords = linker2_match = linker2_coords = None
         search_rule = "i<=1,d<=1,s<=2,2i+2d+1s<=2:[ATGC]"
 
-        linker1_coords = regex.search(rf"(?be)({cls.linker1}){{{search_rule}}}", read_seq).span()
-        if linker1_coords:
-            linker2_coords = regex.search(rf"(?be)({cls.linker2}){{{search_rule}}}", read_seq).span()
-            return linker1_coords, linker2_coords if linker2_coords else None
+        linker1_match = regex.search(rf"(?be)({cls.linker1}){{{search_rule}}}", read_seq)
+        if linker1_match:
+            linker1_coords = linker1_match.span()
+            linker2_match = regex.search(rf"(?be)({cls.linker2}){{{search_rule}}}", read_seq)
+            if linker2_match:
+                linker2_coords = linker2_match.span()
+                return linker1_coords, linker2_coords
+            else:
+                return None
         else:
             return None
 
