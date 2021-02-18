@@ -4,6 +4,7 @@ import argparse
 from rhapsodizer import log
 from rhapsodizer.r2 import R2
 from rhapsodizer.r1 import R1
+from rhapsodizer.matrix import Matrix
 
 
 def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_name: str, index_file_name: str):
@@ -23,12 +24,36 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     del r2_dropped
     
     log.info('Processing R1')
+    r1_passed: dict
+    r1_dropped: list
     r1_passed, r1_dropped = R1.parse_fastq(r1, read_length, r2_all_dropped)
-
+    
     # merge dropped reads
     # r2_passed_good = R2.purge_reads(r2_passed, r1_dropped)
     # r1_passed_good = R1.purge_reads(r1_passed, r2_dropped)
-    pass
+    
+    log.info('Generating expression matrix')
+    r1_compiled: dict  = Matrix.compile_r1_passed(r1_passed)
+    
+    del r1_passed
+    del r1_dropped
+    
+    r1_map_info: dict = Matrix.merge_r1_map_info(r1_compiled, r2_map_passed)
+    
+    del r2_map_passed
+    
+    gene_symbols: list = Matrix.get_gene_symbols(bed)
+    
+    rasd_df: pd.DataFrame = Matrix.generate_rasd_matrix(r1_compiled, r1_map_info, gene_symbols)
+    
+    del r1_compiled
+    del r1_map_info
+    
+    rsec_df: pd.DataFrame = Matrix().generate_rsec_matrix(rasd_df, gene_symbols)
+    
+    del rasd_df
+    
+    rsec_df.to_csv('rsec_df.csv')
 
 
 if __name__ == "__main__":
