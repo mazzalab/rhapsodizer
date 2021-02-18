@@ -53,7 +53,7 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     
     del rasd_df
     
-    rsec_df.to_csv('rsec_df.csv')
+    rsec_df.to_csv('../files/rsec_df.csv')
 
 
 if __name__ == "__main__":

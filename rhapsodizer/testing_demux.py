@@ -4,7 +4,7 @@ import argparse
 from rhapsodizer import log
 from rhapsodizer.r2 import R2
 from rhapsodizer.r1 import R1
-from rhapsodizer.matrix import Matrix
+from rhapsodizer.testing_matrix import Matrix
 
 
 def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_name: str, index_file_name: str):
@@ -15,12 +15,12 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     r2_map_passed, r2_map_dropped = R2.parse_bam(r2_map, bed)
     
     ###testing
-    #r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7200:1063'] =  'PTPRC'
-    #r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7201:1063'] =  'PIK3AP1'
-    #r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7202:1063'] =  'PIK3AP1'
-    #r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7203:1063'] =  'PIK3AP1'
-    #r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7204:1063'] =  'SOD2'
-    #r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7205:1063'] =  'SOD2'
+    r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7200:1063'] =  'PTPRC'
+    r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7201:1063'] =  'PIK3AP1'
+    r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7202:1063'] =  'PIK3AP1'
+    r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7203:1063'] =  'PIK3AP1'
+    r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7204:1063'] =  'SOD2'
+    r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7205:1063'] =  'SOD2'
     ###
     
     #print('r2_map_passed')
@@ -56,12 +56,12 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     r1_passed, r1_dropped = R1.parse_fastq(r1, read_length, r2_all_dropped)
     
     ###testing
-    #r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7200:1063 1:N:0:CGAGGCTG'] = ('ATCACGTTA', 'CGATGTTTA', 'TTAGGCATA', 'CCCCAGGG')
-    #r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7201:1063 1:N:0:CGAGGCTG'] = ('GAGTACATT', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCGGGG')
-    #r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7202:1063 1:N:0:CGAGGCTG'] = ('GAGTACATT', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCGGGG')
-    #r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7203:1063 1:N:0:CGAGGCTG'] = ('GAGTACATT', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCAGGG')
-    #r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7204:1063 1:N:0:CGAGGCTG'] = ('GAGTACATT', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCGGGG')
-    #r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7205:1063 1:N:0:CGAGGCTG'] = ('GAGTATTAG', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCGGGG')
+    r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7200:1063 1:N:0:CGAGGCTG'] = ('ATCACGTTA', 'CGATGTTTA', 'TTAGGCATA', 'CCCCAGGG')
+    r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7201:1063 1:N:0:CGAGGCTG'] = ('GAGTACATT', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCGGGG')
+    r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7202:1063 1:N:0:CGAGGCTG'] = ('GAGTACATT', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCGGGG')
+    r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7203:1063 1:N:0:CGAGGCTG'] = ('GAGTACATT', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCAGGG')
+    r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7204:1063 1:N:0:CGAGGCTG'] = ('GAGTACATT', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCGGGG')
+    r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7205:1063 1:N:0:CGAGGCTG'] = ('GAGTATTAG', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCGGGG')
     ###
     
     #print('r1_passed')
@@ -104,7 +104,7 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     
     del rasd_df
     
-    rsec_df.to_csv('rsec_df.csv')
+    rsec_df.to_csv('../files/rsec_df.csv')
     #print('rsec_df')
     
     # dbec_df: pd.DataFrame = Matrix.generate_dbec_matrix(rsec_df)
