@@ -57,7 +57,8 @@ class Matrix:
                     res = regex.fullmatch(rf"(?be)({cls_umi_1[-8:]}){{{matching_rule}}}", cls_umi_2[-8:])
                     if res and cls_umi_1[-8:] != cls_umi_2[-8:]:
                         # check parenthood criteria
-                        if parent_values[0] >= frequency_2:  # if parent_values[0] > (2*frequency_2-1):
+                        if parent_values[0] > (2*frequency_2-1):
+                        # if parent_values[0] >= frequency_2:
                             parent_values[0] += frequency_2
                             parent_values[1].append(cls_umi_2[-8:])
             

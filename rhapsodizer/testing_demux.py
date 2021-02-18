@@ -75,11 +75,16 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     log.info('Generating expression matrix')
     r1_compiled: dict  = Matrix.compile_r1_passed(r1_passed)
     
+    del r1_passed
+    del r1_dropped
+    
     #print('r1_compiled')
     #for k,v in r1_compiled.items():
     #    print(k,v)
     
     r1_map_info: dict = Matrix.merge_r1_map_info(r1_compiled, r2_map_passed)
+    
+    del r2_map_passed
     
     #print('r1_map_info')
     #for k,v in r1_map_info.items():
@@ -89,18 +94,23 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     
     rasd_df: pd.DataFrame = Matrix.generate_rasd_matrix(r1_compiled, r1_map_info, gene_symbols)
     
-    #rasd_df.to_csv('rasd_df')
+    del r1_compiled
+    del r1_map_info
+    
+    #rasd_df.to_csv('rasd_df.csv')
     #print('rasd_df')
     
     rsec_df: pd.DataFrame = Matrix().generate_rsec_matrix(rasd_df, gene_symbols)
     
-    rsec_df.to_csv('rsec_df')
+    del rasd_df
+    
+    rsec_df.to_csv('rsec_df.csv')
     #print('rsec_df')
     
     # dbec_df: pd.DataFrame = Matrix.generate_dbec_matrix(rsec_df)
     
     # print('dbec_df')
-    # dbec_df.to_csv('dbec_df')
+    # dbec_df.to_csv('dbec_df.csv')
 
 
 if __name__ == "__main__":
