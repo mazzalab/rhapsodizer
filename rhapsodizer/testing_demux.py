@@ -7,7 +7,7 @@ from rhapsodizer.r1 import R1
 from rhapsodizer.testing_matrix import Matrix
 
 
-def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_name: str, index_file_name: str):
+def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_name: str, index_file_name: str, matrix_name: str):
     log.info('Processing R2')
     # read alignment passed/dropped read headers
     r2_map_passed: dict
@@ -104,7 +104,9 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     
     del rasd_df
     
-    rsec_df.to_csv('../files/rsec_df.csv')
+    matrix_path = '../files/' + matrix_name + '.csv'
+    
+    rsec_df.to_csv(matrix_path)
     #print('rsec_df')
     
     # dbec_df: pd.DataFrame = Matrix.generate_dbec_matrix(rsec_df)
@@ -122,6 +124,7 @@ if __name__ == "__main__":
     parser.add_argument("--tag", help="Sample tags file")
     parser.add_argument("--index", help="Cartridge indices file")
     parser.add_argument("--read_length", help="Sequencing full read length", type=int)
+    parser.add_argument("--matrix", help="Output expression matrix file")
     args = parser.parse_args()
 
     r1 = args.r1
@@ -131,6 +134,7 @@ if __name__ == "__main__":
     st_f_name = args.tag
     ind_f_name = args.index
     read_length = args.read_length
+    matrix_name = args.matrix
 
     log.info('Start processing BD Rhapsody reads')
-    main(r1, r2, r2_bam, bed, read_length, st_f_name, ind_f_name)
+    main(r1, r2, r2_bam, bed, read_length, st_f_name, ind_f_name, matrix_name)
