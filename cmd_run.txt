@@ -1,0 +1,1 @@
+python3 testing_demux.py -r1 ./fastq/fake_R1.fastq.gz -r2 aaaa -bam ./fastq/fake_R2.bam.srt -bed ./resources/gene_coordinates.bed --tag ./resources/sample_tag_list.txt --index ./resources/index_list.txt --read_length 78 --matrix final_matrix_name
