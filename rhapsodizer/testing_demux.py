@@ -23,9 +23,9 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     r2_map_passed['NS500299:176:HH2GTBGXG:1:11101:7205:1063'] =  'SOD2'
     ###
     
-    #print('r2_map_passed')
-    #for k,v in r2_map_passed.items():
-    #    print(k,v)
+    print('r2_map_passed')
+    for k,v in r2_map_passed.items():
+        print(k,v)
     
     #print('r2_map_dropped')
     #for x in r2_map_dropped:
@@ -64,9 +64,9 @@ def main(r1: str, r2: str, r2_map: str, bed: str, read_length: int, stags_file_n
     r1_passed['@NS500299:176:HH2GTBGXG:1:11101:7205:1063 1:N:0:CGAGGCTG'] = ('GAGTATTAG', 'TACTAGTCA', 'ATCGAGTCT', 'CCCCGGGG')
     ###
     
-    #print('r1_passed')
-    #for k,v in r1_passed.items():
-    #    print(k,v)
+    print('r1_passed')
+    for k,v in r1_passed.items():
+        print(k,v)
         
     #print('r1_dropped')
     #for x in r1_dropped:

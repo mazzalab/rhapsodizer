@@ -337,6 +337,14 @@ class R1(Read):
     min_qual = 20
     min_t_in_polyt = 6
     cl_length = 9
+    umi_length = 8
+    cl1_min_coord = 0
+    cl1_max_coord = 9
+    cl2_min_coord = 21
+    cl2_max_coord = 30
+    cl3_min_coord = 43
+    cl3_max_coord = 52
+    umi_max_coord = 60
 
     @classmethod
     def is_valid_polyt(cls, read_seq_after_umi: str) -> bool:
@@ -350,6 +358,23 @@ class R1(Read):
         numt = c["T"]
         return numt >= cls.min_t_in_polyt
 
+    '''
+    @classmethod
+    def analyze_exact_read(cls, read_seq: str) -> tuple:
+        cl1 = cl2 = cl3 = umi = polyt = None
+        cl1 = read_seq[cls.cl1_min_coord:cls.cl1_max_coord]
+        cl2 = read_seq[cls.cl2_min_coord:cls.cl2_max_coord]
+        cl3 = read_seq[cls.cl3_min_coord:cls.cl3_max_coord]
+        umi = read_seq[cls.cl3_max_coord:cls.umi_max_coord]
+        polyt = read_seq[cls.umi_max_coord:]
+        
+        return cl1 if cl1 in cls.cell_labels_1 else None, \
+               cl2 if cl2 in cls.cell_labels_2 else None, \
+               cl3 if cl3 in cls.cell_labels_2 else None, \
+               umi if umi else None, \
+               polyt
+               
+    '''
     @classmethod
     def analyze_read(cls, read_seq: str) -> tuple:
         linkers_coords = cl1_matched = cl2_matched = cl3_matched = umi = polyt = None
@@ -470,6 +495,9 @@ class R1(Read):
 
                             if (cl1 and cl2 and cl3 and umi and polyt) and R1.is_valid_polyt(polyt) and "N" not in umi:
                                 r1_passed[header] = (cl1, cl2, cl3, umi)
+                                # write to file the result
+                                #with open('../files/r1_session_1Mtest.txt', 'a') as r1f:
+                                    #r1f.write(f'{header} {r1_passed[header]}\n')
                             else:
                                 r1_dropped.append((header, cl1, cl2, cl3, umi))
 

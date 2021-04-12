@@ -39,7 +39,7 @@ class Matrix:
         rasd_df.fillna(0, inplace=True)
         
         for header, info in r1_map_info.items():
-            rasd_df[info[0]].loc[info[1]] += 1
+            rasd_df.at[info[1], info[0]] += 1
         
         return rasd_df
     
@@ -61,31 +61,32 @@ class Matrix:
                             parent_values[0] += frequency_2
                             parent_values[1].append(cls_umi_2[-8:])
             
-            if parent_values[0] >= frequency_1 and len(parent_values[1]) >= 0:
-                parents_dict[cls_umi_1] = parent_values
-        
-        purged_parents_dict = parents_dict.copy()
+            parents_dict[cls_umi_1] = parent_values
+            
+        purged_parents_dict = {}
         
         for parent in parents_dict.keys():
-            for child in parents_dict.values():
-                if parent[-8:] in child[1]:
-                    del purged_parents_dict[parent]
+            if parent not in purged_parents_dict.keys():
+                for child in parents_dict.values():
+                    is_parent = True
+                    if parent[-8:] in child[1]:
+                        is_parent = False
+                        break
+                if is_parent:
+                    purged_parents_dict[parent] = parents_dict[parent]
+        
+        del parents_dict
         
         return purged_parents_dict
-    
-    def compile_rows(self, purged_parents_dict: dict, gene_position: int, genes_count: int, rsec_list: list, rsec_labels: list):
-        for label, frequency in purged_parents_dict.items():
-            temp_rsec_list = [0] * genes_count
-            temp_rsec_list[gene_position] = frequency[0]
-            rsec_labels.append(label)
-            rsec_list.append(temp_rsec_list)
     
     def generate_rsec_matrix(self, rasd_df: pd.DataFrame, gene_symbols: list) -> pd.DataFrame:
         rsec_list = []
         rsec_labels = []
+        gene_count = len(gene_symbols)
         
         for gene in gene_symbols:
             cls_umi_dict = {}  # labels : frequencies
+            gene_pos = gene_symbols.index(gene)
             
             for cls_umi, row in rasd_df.iterrows():
                 if row[gene] > 0:
@@ -93,7 +94,11 @@ class Matrix:
                     
             purged_parents_dict = self.collapse_umi(cls_umi_dict)
             
-            self.compile_rows(purged_parents_dict, gene_symbols.index(gene), len(gene_symbols), rsec_list, rsec_labels)            
+            for label, frequency in purged_parents_dict.items():
+                temp_rsec_list = [0] * gene_count
+                temp_rsec_list[gene_pos] = frequency[0]
+                rsec_labels.append(label)
+                rsec_list.append(temp_rsec_list)
             
         rsec_df = pd.DataFrame(rsec_list, index=rsec_labels, columns=gene_symbols).groupby(level=0).sum()
         

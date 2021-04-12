@@ -148,6 +148,9 @@ class R2(Read):
                                     or (read_start < int(gene_start) <= read_end) \
                                     or (read_start <= int(gene_end) < read_end):
                                         r2_map_passed[read.read_name] = gene_symbol.rstrip('\n')
+                                        # write to file the result
+                                        #with open('../files/mapping_session_1Mtest.txt', 'a') as mappingf:
+                                            #mappingf.write(f'{read.read_name} {r2_map_passed[read.read_name]}\n')
                                         break  # skip remaining lines of bed file
                                     else:
                                         continue  # read next gene coordinates
